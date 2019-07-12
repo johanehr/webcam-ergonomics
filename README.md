@@ -1,0 +1,2 @@
+# webcam-ergonomics
+This is a computer vision project with the goal of estimating head position relative to the webcam, based on the assumption that the user mostly looks straight ahead. The constant distance between the eyes then allows for an estimate of distance from the webcam, as well as a general angle. If the head position strays outside a "safe-zone" around a neutral, ergonomically desired position for too long, a warning can be displayed, prompting the user to correct their posture. This neutral position can be adjusted on the fly.
