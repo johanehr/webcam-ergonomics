@@ -1,17 +1,18 @@
-DONE: 
+DONE:
 - Include camera calibration in config file
 - Include option to adjust IPD in config file
 - Include option to adjust neutral position in config file
 - Include option to adjust neutral position tolerances in config file (x, y, z)
 - Include option to set count time until alert
 
-TODO: 
+TODO:
 - Find camera calibration parameters
 - Generate and print basic estimate of head position based on eye positions in image (iff ONE head)
 - Implement discrete LP-filter for x-, y-, and z-position of head to smoothen out jitter
 - Implement detection of straying from neutral position (simple count down until alerted)
 - Play small sound with increasing intensity (volume increases + period between beeps decreases)
 
-FUTURE WORK: 
+FUTURE WORK:
 - GUI for adjusting settings in config file
 - Option to adjust neutral position on the fly
+- Eye fatigue, blinking rate
