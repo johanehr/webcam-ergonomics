@@ -1,12 +1,12 @@
 {
   "path_face_cascade": "/home/johan/Desktop/opencv-4.1.0/data/haarcascades/haarcascade_frontalface_alt2.xml",
-  "path_eyes_cascade": "/home/johan/Desktop/opencv-4.1.0/data/haarcascades/haarcascade_eye_tree_eyeglasses.xml",
+  "path_eyes_cascade": "/home/johan/Desktop/opencv-4.1.0/data/haarcascades/haarcascade_eye.xml",
   "camera_id": 0,
-  "downscale_factor": 2, 
+  "downscale_factor": 2.0,
   "ipd": 0.063,
   "alert_time": 10.0,
-  "neutral": [0.0, 0.0, 1.0],
-  "neutral_bbx": [0.1, 0.1, 0.2],
+  "neutral_position": [0.0, 0.0, 1.0],
+  "neutral_radius": 0.2,
   "camera_calibration": {
     "fx": 1.0,
     "fy": 1.0,
