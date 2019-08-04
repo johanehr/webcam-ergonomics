@@ -148,7 +148,7 @@ class LocationDetector {
     }
 
 
-    bool captureAndProcessImage() {
+    int captureAndProcessImage() {
       cap >> frame;
 
       Mat resized_frame (cvRound(frame.rows / downscale_factor), cvRound( frame.cols / downscale_factor), frame.type());
@@ -158,11 +158,12 @@ class LocationDetector {
       cvtColor( resized_frame, resized_frame_gray, COLOR_BGR2GRAY );
       equalizeHist( resized_frame_gray, resized_frame_gray );
 
-      bool detected = detectFeatures(resized_frame_gray);
-      return detected;
+      int detected_state = detectFeatures(resized_frame_gray);
+
+      return detected_state;
     }
 
-    bool detectFeatures(Mat frame_gray) {
+    int detectFeatures(Mat frame_gray) {
       //-- Detect faces
       std::vector<Rect> faces;
       face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0, Size(30, 30));
@@ -184,31 +185,37 @@ class LocationDetector {
           eye2_center.y = (faces[0].y + eyes[1].y + eyes[1].height/2)*downscale_factor;
 
           std::cout << "Detected both eyes!\n";
-          return true;
+          return 2;
         }
         else{
           std::cout << "eyes.size() == " << eyes.size() << "\n";
+          return 1;
         }
       }
       else{
         std::cout << "faces.size() == " << faces.size() << "\n";
       }
       std::cout << "WARNING: Lost sight of eyes!\n";
-      return false;
+      return 0;
 
     }
 
-    void showLiveFeed(bool detected){
+    void showLiveFeed(int detection_state){
       int radius_eye = frame.cols/20;
       int radius_face = frame.cols/4;
 
       // Mark in white if newly found, red if old detection
-      if (detected){
+      if (detection_state == 2){ // Found both face and eyes
         circle( frame, face_center, radius_face, Scalar( 255, 255, 255 ), 2 );
         circle( frame, eye1_center, radius_eye, Scalar( 255, 255, 255 ), 1 );
         circle( frame, eye2_center, radius_eye, Scalar( 255, 255, 255 ), 1 );
       }
-      else {
+      else if (detection_state == 1){ // Found only face
+        circle( frame, face_center, radius_face, Scalar( 255, 255, 255 ), 2 );
+        circle( frame, eye1_center, radius_eye, Scalar( 0, 0, 255 ), 1 );
+        circle( frame, eye2_center, radius_eye, Scalar( 0, 0, 255 ), 1 );
+      }
+      else { // Did not find at all
         circle( frame, face_center, radius_face, Scalar( 0, 0, 255 ), 2 );
         circle( frame, eye1_center, radius_eye, Scalar( 0, 0, 255 ), 1 );
         circle( frame, eye2_center, radius_eye, Scalar( 0, 0, 255 ), 1 );
@@ -244,8 +251,8 @@ int main(int argc, char** argv )
   while(true){
 
     auto t_start = std::chrono::high_resolution_clock::now();
-    bool detection_success = locDet.captureAndProcessImage();
-    if (detection_success){
+    int detection_state = locDet.captureAndProcessImage();
+    if (detection_state == 2){
       // TODO: Implement logic
       //currLoc = locDet.calculateLocation();
       // ergCheck.addNewLocation(locDet.currLoc);
@@ -254,7 +261,7 @@ int main(int argc, char** argv )
     }
 
     if (live_feed){
-      locDet.showLiveFeed(detection_success);
+      locDet.showLiveFeed(detection_state);
       //locDet.showLiveFeed(detection_success, x, y, z, time_NOT_OK);
     }
 
