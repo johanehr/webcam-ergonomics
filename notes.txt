@@ -6,16 +6,18 @@ DONE:
 - Include option to set count time until alert
 - Integrate basic eye detection
 - Refactor to OOP
+- Color face/eye detection separately
+- Implement averaging of x samples for x-, y-, and z-position of head to smoothen out jitter
 
 TODO:
-- Color face/eye detection separately
+- Comment code
 - Find camera calibration parameters
 - Generate and print basic estimate of head position based on eye positions in image (iff ONE head)
-- Implement averaging of x samples for x-, y-, and z-position of head to smoothen out jitter
 - Implement detection of straying from neutral position (simple count down until alerted)
 - Play small sound with increasing intensity (volume increases + period between beeps decreases)
 
 FUTURE WORK:
 - GUI for adjusting settings in config file
-- Option to adjust neutral position on the fly
+- Built-in option to calibrate camera (?)
+- Option to adjust neutral position on the fly (button combo?)
 - Eye fatigue, blinking rate

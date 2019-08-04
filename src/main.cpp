@@ -26,6 +26,7 @@ class ErgonomicsChecker {
     double neutral_position[3];
     double neutral_radius;
     int num_received = 0;
+    std::chrono::time_point<std::chrono::high_resolution_clock> last_OK_time = std::chrono::high_resolution_clock::now();
 
   public:
     ErgonomicsChecker(){
@@ -49,12 +50,11 @@ class ErgonomicsChecker {
 
     void addNewLocation(double x, double y, double z){
       // Keep track of how many locations have been received. Use % operator to select index for storing to continuously update.
-      num_received++;
       int index = num_received % TRAILING_AVG_LOCATIONS;
       trailing_position[index][0] = x;
       trailing_position[index][1] = y;
       trailing_position[index][2] = z;
-
+      num_received++;
     }
 
     void calcFilteredLocation(){
@@ -63,6 +63,7 @@ class ErgonomicsChecker {
       double z_filtered = 0;
 
       for (int i = 0; i < TRAILING_AVG_LOCATIONS; i++){
+        // NOTE: Before everything is filled, what data is in matrix? Just garbage values?
         x_filtered += trailing_position[i][0];
         y_filtered += trailing_position[i][1];
         z_filtered += trailing_position[i][2];
@@ -73,27 +74,31 @@ class ErgonomicsChecker {
       filtered_position[2] = z_filtered / TRAILING_AVG_LOCATIONS;
     }
 
-    /*
+    void checkErgonomics(){
+      // Compare current and neutral position, is it sufficiently close to neutral position?
+      double distance = sqrt(
+        pow(filtered_position[0]-neutral_position[0],2)
+        +pow(filtered_position[1]-neutral_position[1],2)
+        +pow(filtered_position[2]-neutral_position[2],2));
 
-    void checkPosition(){
-
-      // Compare current and neutral position, is it inside neutral bbx?
       // If inside, record OK alert_time
+      if (distance <= neutral_radius){
+        last_OK_time = std::chrono::high_resolution_clock::now();
+      }
 
-      if ((current_time - last_OK_time) > threshold_time) {
+      // If time since OK exceeds alert_time, alert the user
+      double time_since_OK = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - last_OK_time).count()/1000.0;
+      std::cout << "Time since OK: " << time_since_OK << "\n";
+      if (time_since_OK > alert_time) {
         alertUser();
       }
     }
 
-
     void alertUser(){
-      beep();
-    }
-
-    void beep(){
+      // TODO: Make this occur at increasing frequency or similar. Now beep-beep-beep depending on loop rate -> too often!
       std::cout << "\a";
     }
-    */
+
 };
 
 
@@ -253,11 +258,15 @@ int main(int argc, char** argv )
     auto t_start = std::chrono::high_resolution_clock::now();
     int detection_state = locDet.captureAndProcessImage();
     if (detection_state == 2){
-      // TODO: Implement logic
-      //currLoc = locDet.calculateLocation();
-      // ergCheck.addNewLocation(locDet.currLoc);
-      // ergCheck.calcFilteredLocation();
-      // ergCheck.checkPosition();
+      // TODO: Implement logic. Now hardcoded fixed value for testing.
+      // locDet.calculateLocation();
+      double x = 0;
+      double y = 0;
+      double z = 1.5;
+
+      ergCheck.addNewLocation(x, y, z);
+      ergCheck.calcFilteredLocation();
+      ergCheck.checkErgonomics();
     }
 
     if (live_feed){
