@@ -111,6 +111,7 @@ class LocationDetector {
     double downscale_factor;
     int webcam_id;
     double ipd;// in meters
+    double focal_length;
     Point eye1_center = Point( 0, 0 );
     Point eye2_center = Point( 0, 0 );
     Point face_center = Point( 0, 0 );
@@ -127,6 +128,11 @@ class LocationDetector {
       }
     }
 
+    // Coordinates relative to camera, z is depth
+    double xCoord;
+    double yCoord;
+    double zCoord;
+
     void readJsonSettings(String file_path){
       std::ifstream f(file_path);
       json settings;
@@ -140,6 +146,9 @@ class LocationDetector {
       downscale_factor = settings["downscale_factor"];
       std::cout << "Downscale factor: " << downscale_factor << "x\n";
 
+      focal_length = settings["camera_calibration"]["f"];
+      std::cout << "Focal length: " << focal_length << "\n";
+
       if( !face_cascade.load( settings["path_face_cascade"] ) )
         {
           std::cout << "Error loading face cascade\n";
@@ -149,7 +158,6 @@ class LocationDetector {
           std::cout << "Error loading eyes cascade\n";
         };
 
-      // TODO: Camera calibration settings
     }
 
 
@@ -231,11 +239,22 @@ class LocationDetector {
       imshow( "webcam-ergonomics LIVE FEED", frame );
     }
 
-    /*
     void calculateLocation(){
-      // TODO: return unfiltered location estimate
+      // Use basic projector model with "known" distance to eyes based on known IPD and focal length. Assumption: face looking directly at camera.
+      double px_between_eyes = sqrt(pow(eye1_center.x - eye2_center.x, 2.0) + pow(eye1_center.y - eye2_center.y, 2.0));
+      zCoord = ipd * focal_length / px_between_eyes;
+
+      double x_avg = (eye1_center.x + eye2_center.x) / 2.0;
+      double y_avg = (eye1_center.y + eye2_center.y) / 2.0;
+
+      double w = frame.cols; // frame width in px
+      double h = frame.rows; // frame height in px
+
+      xCoord = (x_avg - w/2.0)*zCoord/focal_length;
+      yCoord = (y_avg - h/2.0)*zCoord/focal_length;
+
+      std::cout << "Position: (" << xCoord << ", " << yCoord << ", " << zCoord << ")\n";
     }
-    */
 };
 
 
@@ -248,6 +267,12 @@ int main(int argc, char** argv )
     if (mode == "-L") {
       live_feed = true;
     }
+    /*
+    TODO: Make a "set neutral" mode, where pressing a key sets the position
+    if (mode == "-S") {
+      neutral_set = false;
+    }
+    */
   }
 
   LocationDetector locDet = LocationDetector();
@@ -258,13 +283,8 @@ int main(int argc, char** argv )
     auto t_start = std::chrono::high_resolution_clock::now();
     int detection_state = locDet.captureAndProcessImage();
     if (detection_state == 2){
-      // TODO: Implement logic. Now hardcoded fixed value for testing.
-      // locDet.calculateLocation();
-      double x = 0;
-      double y = 0;
-      double z = 1.5;
-
-      ergCheck.addNewLocation(x, y, z);
+      locDet.calculateLocation();
+      ergCheck.addNewLocation(locDet.xCoord, locDet.yCoord, locDet.zCoord);
       ergCheck.calcFilteredLocation();
       ergCheck.checkErgonomics();
     }
