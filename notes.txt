@@ -10,12 +10,12 @@ DONE:
 - Implement averaging of x samples for x-, y-, and z-position of head to smoothen out jitter
 - Implement detection of straying from neutral position (simple count down until alerted)
 - Generate and print basic estimate of head position based on eye positions in image (iff ONE head)
-
-TODO:
-- Comment code
 - Display position on live feed
 - Find camera calibration parameters (see screenshot of method using field of view)
-- Play small sound with increasing intensity (volume increases + period between beeps decreases)
+- Play small sound with increasing frequency between beeps
+
+TODO:
+
 
 FUTURE WORK:
 - GUI for adjusting settings in config file
